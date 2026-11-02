@@ -38,6 +38,7 @@ import { AIMentorView } from './components/AIMentorView';
 import { ThinkingLabModuleView } from './components/ThinkingLabModuleView';
 import { ReflectionJournalView } from './components/ReflectionJournalView';
 import { PersonalProgressView } from './components/PersonalProgressView';
+import { KnowledgeConnectionsView } from './components/KnowledgeConnectionsView';
 
 type AppModule =
   | 'dashboard'
@@ -46,7 +47,8 @@ type AppModule =
   | 'mentor'
   | 'thinking-lab'
   | 'journal'
-  | 'progress';
+  | 'progress'
+  | 'connections';
 
 export default function App() {
   const [activeModule, setActiveModule] = useState<AppModule>('dashboard');
@@ -261,6 +263,7 @@ export default function App() {
     { id: 'dashboard', label: 'Trang chủ' },
     { id: 'explore', label: 'Khám phá' },
     { id: 'thinking-lab', label: 'Luyện tư duy' },
+    { id: 'connections', label: 'Kết nối kiến thức' },
     { id: 'journal', label: 'Nhật ký' },
     { id: 'progress', label: 'Hồ sơ' },
   ];
@@ -270,6 +273,7 @@ export default function App() {
     { id: 'explore', label: 'Khám phá' },
     { id: 'mentor', label: 'AI Mentor' },
     { id: 'thinking-lab', label: 'Tư duy' },
+    { id: 'connections', label: 'Kết nối' },
     { id: 'journal', label: 'Nhật ký' },
     { id: 'progress', label: 'Hồ sơ' },
   ];
@@ -480,6 +484,14 @@ export default function App() {
             onDiscussInMentor={(domainId, prompt, mode) =>
               handleOpenAIMentor(domainId, prompt, mode)
             }
+          />
+        )}
+
+        {activeModule === 'connections' && (
+          <KnowledgeConnectionsView
+            progressMap={progressMap}
+            onOpenDomain={handleExploreDomain}
+            onOpenLesson={handleOpenLesson}
           />
         )}
 

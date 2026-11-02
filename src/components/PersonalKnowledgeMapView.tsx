@@ -21,6 +21,8 @@ export function PersonalKnowledgeMapView({ progressMap, onOpenDomain, onOpenLess
   const reviewTopics = Object.values(progressMap).filter((record) => record.status === MasteryStatus.NEEDS_REVIEW || record.isDifficult).slice(0, 3);
   const untouchedDomains = domainStats.filter((item) => item.touched === 0).slice(0, 3);
   const strongestDomain = domainStats.slice().sort((a, b) => b.completed - a.completed || b.touched - a.touched)[0];
+  const learningMomentum = domainStats.reduce((sum, item) => sum + item.touched, 0);
+  const focusDomain = domainStats.filter((item) => item.touched > 0).sort((a, b) => b.needsReview - a.needsReview || b.touched - a.touched)[0];
 
   return (
     <div className="space-y-8">
@@ -53,6 +55,17 @@ export function PersonalKnowledgeMapView({ progressMap, onOpenDomain, onOpenLess
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500"><Link2 className="h-4 w-4" /> Mở rộng bản đồ</div>
           {untouchedDomains.length === 0 ? <p className="mt-3 text-sm text-slate-600">Bạn đã chạm tới cả 10 lĩnh vực. Hãy tiếp tục đào sâu hoặc quay lại những chủ đề cần ôn.</p> : <><p className="mt-2 text-sm text-slate-600">Bạn chưa bắt đầu các lĩnh vực dưới đây. Đây là lời mời khám phá, không phải thứ tự bắt buộc.</p><div className="mt-3 flex flex-wrap gap-2">{untouchedDomains.map(({ domain }) => <button key={domain.id} type="button" onClick={() => onOpenDomain(domain.id)} className="min-h-[40px] rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-teal-600 hover:bg-teal-50 cursor-pointer">{domain.shortTitle}</button>)}</div></>}
         </article>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6">
+        <div className="flex items-start gap-3">
+          <div className="rounded-xl bg-white p-2.5 text-teal-800 shadow-sm"><Sparkles className="h-5 w-5" /></div>
+          <div className="max-w-3xl">
+            <div className="text-xs font-bold uppercase tracking-wide text-slate-500">Gợi ý từ hành trình của bạn</div>
+            <h2 className="mt-1 text-lg font-bold text-slate-900">{learningMomentum === 0 ? 'Bắt đầu bằng một câu hỏi bạn thật sự muốn hiểu' : focusDomain?.needsReview ? `Ưu tiên làm rõ những phần còn khó trong ${focusDomain.domain.shortTitle}` : `Tiếp tục xây nền tảng từ ${nextDomain.shortTitle}`}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">{learningMomentum === 0 ? 'Chọn một lĩnh vực và bắt đầu từ một chủ đề cụ thể. Khi có dữ liệu học thực tế, bản đồ sẽ dần phản ánh hành trình của riêng bạn.' : focusDomain?.needsReview ? 'Bạn có một số chủ đề đang được đánh dấu cần xem lại. Hãy quay lại một chủ đề, tự giải thích bằng lời của mình và kiểm tra lại điều chưa chắc chắn.' : 'Bạn đã có tiến độ ổn định. Hãy học sâu hơn một chủ đề hoặc kết nối nó với một lĩnh vực khác thay vì chỉ mở rộng số lượng nội dung.'}</p>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6">

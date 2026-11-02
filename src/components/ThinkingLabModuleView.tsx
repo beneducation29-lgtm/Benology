@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Clock3, History, Loader2, MessageSquare, RotateCcw, Trash2 } from 'lucide-react';
+import { BarChart3, CheckCircle2, Clock3, History, Loader2, MessageSquare, RotateCcw, Target, Trash2 } from 'lucide-react';
 import { THINKING_DRILL_SCENARIOS } from '../data/curriculum';
 import {
   MentorMode,
@@ -147,6 +147,9 @@ export function ThinkingLabModuleView({
     catch { /* Keep the exercise usable when browser storage is unavailable. */ }
   }, [practiceHistory]);
 
+  const practiceByType = (type: ThinkingDrillType) => practiceHistory.filter((record) => record.drillType === type).length;
+  const latestPractice = practiceHistory[0];
+
   const scenariosForTab =
     activeTab === 'free_analyzer'
       ? []
@@ -215,6 +218,28 @@ export function ThinkingLabModuleView({
           Luyện Tập Tư Duy Phản Biện &amp; Phân Tích Đa Chiều
         </h1>
       </div>
+
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <article className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-teal-800"><BarChart3 className="h-4 w-4" /> Lần luyện đã lưu</div>
+          <div className="mt-2 text-2xl font-bold text-slate-900">{practiceHistory.length}</div>
+          <p className="mt-1 text-xs text-slate-500">Dữ liệu từ thiết bị hiện tại.</p>
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-teal-800"><Target className="h-4 w-4" /> Kỹ năng đã chạm</div>
+          <div className="mt-2 text-2xl font-bold text-slate-900">{DRILL_TABS.filter((tab) => tab.id !== 'free_analyzer' && practiceByType(tab.id as ThinkingDrillType) > 0).length}/4</div>
+          <p className="mt-1 text-xs text-slate-500">Phân tích, thiên kiến, hai chiều, nguồn tin.</p>
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-4 sm:col-span-2">
+          <div className="text-xs font-semibold text-teal-800">Gợi ý luyện tiếp</div>
+          <p className="mt-2 text-sm font-semibold text-slate-900">
+            {(['argument', 'bias', 'two_sides', 'source_check'] as ThinkingDrillType[]).find((type) => practiceByType(type) === 0)
+              ? 'Hãy thử một dạng bài bạn chưa luyện để mở rộng góc nhìn.'
+              : 'Bạn đã luyện đủ 4 dạng. Hãy xem lại các phản hồi cũ và chọn một điểm yếu để phân tích sâu hơn.'}
+          </p>
+          {latestPractice && <p className="mt-1 text-xs text-slate-500">Lần gần nhất: {new Date(latestPractice.completedAt).toLocaleString('vi-VN')}</p>}
+        </article>
+      </section>
 
       {/* Sub-module Tabs */}
       <div className="flex items-center gap-1.5 p-1.5 bg-slate-200/70 rounded-xl overflow-x-auto">

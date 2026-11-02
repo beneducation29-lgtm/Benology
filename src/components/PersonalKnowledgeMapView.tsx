@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ArrowRight, BookOpen, Brain, CircleAlert, Map, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, Brain, CircleAlert, Lightbulb, Link2, Map, Sparkles } from 'lucide-react';
 import { LEARNING_DOMAINS } from '../data/curriculum';
 import { MasteryStatus, TopicProgressRecord } from '../types/mentor';
 
@@ -19,6 +19,8 @@ export function PersonalKnowledgeMapView({ progressMap, onOpenDomain, onOpenLess
 
   const nextDomain = domainStats.slice().sort((a, b) => b.touched - a.touched)[0]?.domain ?? LEARNING_DOMAINS[0];
   const reviewTopics = Object.values(progressMap).filter((record) => record.status === MasteryStatus.NEEDS_REVIEW || record.isDifficult).slice(0, 3);
+  const untouchedDomains = domainStats.filter((item) => item.touched === 0).slice(0, 3);
+  const strongestDomain = domainStats.slice().sort((a, b) => b.completed - a.completed || b.touched - a.touched)[0];
 
   return (
     <div className="space-y-8">
@@ -38,6 +40,19 @@ export function PersonalKnowledgeMapView({ progressMap, onOpenDomain, onOpenLess
         <article className="rounded-2xl border border-slate-200 bg-white p-5"><Brain className="h-5 w-5 text-teal-700" /><div className="mt-3 text-2xl font-bold">{domainStats.filter((item) => item.touched > 0).length}/10</div><p className="mt-1 text-xs text-slate-500">Lĩnh vực đã bắt đầu</p></article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5"><Sparkles className="h-5 w-5 text-teal-700" /><div className="mt-3 text-2xl font-bold">{domainStats.reduce((sum, item) => sum + item.completed, 0)}</div><p className="mt-1 text-xs text-slate-500">Chủ đề có thể giải thích hoặc áp dụng</p></article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5"><CircleAlert className="h-5 w-5 text-amber-600" /><div className="mt-3 text-2xl font-bold">{reviewTopics.length}</div><p className="mt-1 text-xs text-slate-500">Chủ đề đang cần chú ý</p></article>
+      </section>
+
+      <section className="grid gap-5 lg:grid-cols-2">
+        <article className="rounded-2xl border border-violet-100 bg-violet-50/50 p-6">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-violet-800"><Lightbulb className="h-4 w-4" /> Góc nhìn mở rộng</div>
+          <h2 className="mt-2 text-lg font-bold text-slate-900">{strongestDomain?.touched ? `Kết nối từ ${strongestDomain.domain.shortTitle}` : 'Bắt đầu bằng một lĩnh vực'}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">{strongestDomain?.touched ? 'Hãy dùng lĩnh vực bạn đã học nhiều nhất làm điểm xuất phát, sau đó tìm một lĩnh vực khác để so sánh cách nhìn cùng một vấn đề.' : 'Khi bạn bắt đầu ghi nhận tiến độ, Benology sẽ dùng chính dữ liệu đó để giúp bạn nhìn các hướng học tiếp.'}</p>
+          {strongestDomain?.touched ? <button type="button" onClick={() => onOpenDomain(strongestDomain.domain.id)} className="mt-4 inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-semibold text-violet-900 hover:bg-violet-50 cursor-pointer">Khám phá lĩnh vực <ArrowRight className="h-4 w-4" /></button> : null}
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500"><Link2 className="h-4 w-4" /> Mở rộng bản đồ</div>
+          {untouchedDomains.length === 0 ? <p className="mt-3 text-sm text-slate-600">Bạn đã chạm tới cả 10 lĩnh vực. Hãy tiếp tục đào sâu hoặc quay lại những chủ đề cần ôn.</p> : <><p className="mt-2 text-sm text-slate-600">Bạn chưa bắt đầu các lĩnh vực dưới đây. Đây là lời mời khám phá, không phải thứ tự bắt buộc.</p><div className="mt-3 flex flex-wrap gap-2">{untouchedDomains.map(({ domain }) => <button key={domain.id} type="button" onClick={() => onOpenDomain(domain.id)} className="min-h-[40px] rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-teal-600 hover:bg-teal-50 cursor-pointer">{domain.shortTitle}</button>)}</div></>}
+        </article>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6">

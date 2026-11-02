@@ -1,0 +1,6 @@
+{
+  "name": "Khai Minh — Cố Vấn Phát Triển Cá Nhân & Tự Học",
+  "description": "Hệ thống cố vấn và gia sư cá nhân giúp phát triển tư duy phản biện, triết học, tâm lý học, năng lực tài chính và khả năng tự học dài hạn qua 10 lĩnh vực cốt lõi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

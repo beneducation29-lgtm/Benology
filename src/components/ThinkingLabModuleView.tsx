@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CheckCircle2, Loader2, MessageSquare, RotateCcw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { BarChart3, CheckCircle2, Clock3, History, Loader2, MessageSquare, RotateCcw, Target, Trash2 } from 'lucide-react';
 import { THINKING_DRILL_SCENARIOS } from '../data/curriculum';
 import {
   MentorMode,
@@ -15,6 +15,19 @@ interface ThinkingLabModuleViewProps {
 }
 
 type LabTab = ThinkingDrillType | 'free_analyzer';
+
+interface ThinkingPracticeRecord {
+  id: string;
+  scenarioId: string;
+  drillType: ThinkingDrillType;
+  scenarioTitle: string;
+  answers: Record<string, string>;
+  feedback: ThinkingDrillFeedback;
+  completedAt: string;
+}
+
+const THINKING_HISTORY_KEY = 'benology-thinking-lab-history-v1';
+const MAX_THINKING_HISTORY = 20;
 
 const DRILL_TABS: { id: LabTab; label: string }[] = [
   { id: 'argument', label: 'Phân tích lập luận' },
@@ -120,6 +133,22 @@ export function ThinkingLabModuleView({
   const [feedback, setFeedback] = useState<ThinkingDrillFeedback | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [practiceHistory, setPracticeHistory] = useState<ThinkingPracticeRecord[]>(() => {
+    try {
+      const stored = localStorage.getItem(THINKING_HISTORY_KEY);
+      if (!stored) return [];
+      const parsed: unknown = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed.slice(0, MAX_THINKING_HISTORY) : [];
+    } catch { return []; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem(THINKING_HISTORY_KEY, JSON.stringify(practiceHistory)); }
+    catch { /* Keep the exercise usable when browser storage is unavailable. */ }
+  }, [practiceHistory]);
+
+  const practiceByType = (type: ThinkingDrillType) => practiceHistory.filter((record) => record.drillType === type).length;
+  const latestPractice = practiceHistory[0];
 
   const scenariosForTab =
     activeTab === 'free_analyzer'
@@ -157,6 +186,15 @@ export function ThinkingLabModuleView({
         userSubmission: answers,
       });
       setFeedback(result);
+      setPracticeHistory((previous) => [{
+        id: `${Date.now()}-${activeScenario.id}`,
+        scenarioId: activeScenario.id,
+        drillType: activeTab,
+        scenarioTitle: activeScenario.title,
+        answers: { ...answers },
+        feedback: result,
+        completedAt: new Date().toISOString(),
+      }, ...previous].slice(0, MAX_THINKING_HISTORY));
       onRecordCompletedExercise(
         'critical-thinking',
         `Hoàn thành bài tập Thinking Lab: "${activeScenario.title}"`
@@ -180,6 +218,28 @@ export function ThinkingLabModuleView({
           Luyện Tập Tư Duy Phản Biện &amp; Phân Tích Đa Chiều
         </h1>
       </div>
+
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <article className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-teal-800"><BarChart3 className="h-4 w-4" /> Lần luyện đã lưu</div>
+          <div className="mt-2 text-2xl font-bold text-slate-900">{practiceHistory.length}</div>
+          <p className="mt-1 text-xs text-slate-500">Dữ liệu từ thiết bị hiện tại.</p>
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-teal-800"><Target className="h-4 w-4" /> Kỹ năng đã chạm</div>
+          <div className="mt-2 text-2xl font-bold text-slate-900">{DRILL_TABS.filter((tab) => tab.id !== 'free_analyzer' && practiceByType(tab.id as ThinkingDrillType) > 0).length}/4</div>
+          <p className="mt-1 text-xs text-slate-500">Phân tích, thiên kiến, hai chiều, nguồn tin.</p>
+        </article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-4 sm:col-span-2">
+          <div className="text-xs font-semibold text-teal-800">Gợi ý luyện tiếp</div>
+          <p className="mt-2 text-sm font-semibold text-slate-900">
+            {(['argument', 'bias', 'two_sides', 'source_check'] as ThinkingDrillType[]).find((type) => practiceByType(type) === 0)
+              ? 'Hãy thử một dạng bài bạn chưa luyện để mở rộng góc nhìn.'
+              : 'Bạn đã luyện đủ 4 dạng. Hãy xem lại các phản hồi cũ và chọn một điểm yếu để phân tích sâu hơn.'}
+          </p>
+          {latestPractice && <p className="mt-1 text-xs text-slate-500">Lần gần nhất: {new Date(latestPractice.completedAt).toLocaleString('vi-VN')}</p>}
+        </article>
+      </section>
 
       {/* Sub-module Tabs */}
       <div className="flex items-center gap-1.5 p-1.5 bg-slate-200/70 rounded-xl overflow-x-auto">
@@ -406,6 +466,51 @@ export function ThinkingLabModuleView({
           </div>
         </div>
       ) : null}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
+              <History className="h-4 w-4 text-teal-700" />
+              Nhật ký luyện tư duy
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">Lưu tối đa {MAX_THINKING_HISTORY} lần luyện gần nhất trên trình duyệt này để bạn xem lại tiến trình.</p>
+          </div>
+          {practiceHistory.length > 0 && (
+            <button type="button" onClick={() => {
+              if (window.confirm('Bạn có chắc muốn xóa toàn bộ nhật ký luyện tư duy trên thiết bị này?')) setPracticeHistory([]);
+            }} className="min-h-[40px] inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-500 hover:bg-red-50 hover:text-red-700">
+              <Trash2 className="h-3.5 w-3.5" /> Xóa nhật ký
+            </button>
+          )}
+        </div>
+        {practiceHistory.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
+            <Clock3 className="mx-auto h-5 w-5 text-slate-400" />
+            <p className="mt-2 text-sm font-medium text-slate-700">Chưa có bài luyện nào được lưu</p>
+            <p className="mt-1 text-xs text-slate-500">Hoàn thành một tình huống và phản hồi AI sẽ xuất hiện tại đây.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {practiceHistory.map((record) => (
+              <button key={record.id} type="button" onClick={() => {
+                setActiveTab(record.drillType);
+                setSelectedScenarioId(record.scenarioId);
+                setAnswers(record.answers);
+                setFeedback(record.feedback);
+                setError(null);
+              }} className="w-full rounded-xl border border-slate-200 p-3 text-left transition-colors hover:border-teal-500 hover:bg-teal-50/40">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-sm font-semibold text-slate-900">{record.scenarioTitle}</span>
+                  <span className="text-[11px] text-slate-500">{new Date(record.completedAt).toLocaleString('vi-VN')}</span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600">{record.feedback.strengths}</p>
+                <span className="mt-2 inline-block text-[11px] font-semibold text-teal-800">Mở lại bài làm và phản hồi →</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

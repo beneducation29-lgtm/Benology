@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowRight, Link2, Network, Sparkles } from 'lucide-react';
+import { ArrowRight, Link2, Network, Search, Sparkles } from 'lucide-react';
 import { LEARNING_DOMAINS } from '../data/curriculum';
 import { TopicProgressRecord } from '../types/mentor';
 
@@ -15,6 +15,7 @@ export function KnowledgeConnectionsView({
   onOpenLesson,
 }: KnowledgeConnectionsViewProps) {
   const [selectedDomainId, setSelectedDomainId] = useState('critical-thinking');
+  const [domainQuery, setDomainQuery] = useState('');
 
   const selectedDomain = LEARNING_DOMAINS.find((domain) => domain.id === selectedDomainId)
     ?? LEARNING_DOMAINS[0];
@@ -27,6 +28,9 @@ export function KnowledgeConnectionsView({
   }, [selectedDomain]);
 
   const studiedCount = selectedDomain.topics.filter((topic) => progressMap[topic.id]).length;
+  const visibleDomains = LEARNING_DOMAINS.filter((domain) =>
+    domain.shortTitle.toLocaleLowerCase('vi').includes(domainQuery.trim().toLocaleLowerCase('vi'))
+  );
 
   return (
     <div className="space-y-8">
@@ -54,8 +58,18 @@ export function KnowledgeConnectionsView({
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <h2 className="mb-4 text-sm font-bold text-slate-900">Chọn một lĩnh vực</h2>
+          <label className="mb-3 flex min-h-[44px] items-center gap-2 rounded-xl border border-slate-200 px-3 text-slate-500 focus-within:border-teal-700">
+            <Search className="h-4 w-4 shrink-0" />
+            <input
+              value={domainQuery}
+              onChange={(event) => setDomainQuery(event.target.value)}
+              placeholder="Tìm lĩnh vực..."
+              aria-label="Tìm lĩnh vực kiến thức"
+              className="min-w-0 w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+            />
+          </label>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
-            {LEARNING_DOMAINS.map((domain) => {
+            {visibleDomains.map((domain) => {
               const active = domain.id === selectedDomain.id;
               return (
                 <button
@@ -91,11 +105,29 @@ export function KnowledgeConnectionsView({
                 Câu hỏi kết nối
               </div>
               <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                Khi áp dụng kiến thức từ lĩnh vực này, bạn cần mượn thêm góc nhìn nào để tránh
-                nhìn vấn đề quá đơn giản?
+                {selectedDomain.coreQuestion} Hãy thử đặt câu hỏi: góc nhìn từ {connectedDomains[0]?.shortTitle ?? 'một lĩnh vực khác'}
+                có thể bổ sung hoặc thách thức cách bạn đang hiểu vấn đề này như thế nào?
               </p>
             </div>
           </article>
+
+          {connectedDomains.length > 0 && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="text-xs font-bold uppercase tracking-wide text-slate-500">Đường đi liên ngành</div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-900">{selectedDomain.shortTitle}</span>
+                {connectedDomains.map((domain) => (
+                  <React.Fragment key={domain.id}>
+                    <ArrowRight className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                    <button type="button" onClick={() => setSelectedDomainId(domain.id)} className="min-h-[40px] rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-teal-700 hover:bg-teal-50 cursor-pointer">
+                      {domain.shortTitle}
+                    </button>
+                  </React.Fragment>
+                ))}
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-slate-500">Đây là gợi ý liên hệ để khám phá, không phải quan hệ nhân quả đã được chứng minh.</p>
+            </section>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             {connectedDomains.length > 0 ? connectedDomains.map((domain) => (

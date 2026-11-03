@@ -18,7 +18,9 @@ export function PersonalKnowledgeMapView({ progressMap, onOpenDomain, onOpenLess
   }), [progressMap]);
 
   const nextDomain = domainStats.slice().sort((a, b) => b.touched - a.touched)[0]?.domain ?? LEARNING_DOMAINS[0];
-  const reviewTopics = Object.values(progressMap).filter((record) => record.status === MasteryStatus.NEEDS_REVIEW || record.isDifficult).slice(0, 3);
+  const allReviewTopics = Object.values(progressMap).filter((record) => record.status === MasteryStatus.NEEDS_REVIEW || record.isDifficult);
+  const reviewTopicCount = allReviewTopics.length;
+  const reviewTopics = allReviewTopics.slice(0, 3);
   const untouchedDomains = domainStats.filter((item) => item.touched === 0).slice(0, 3);
   const strongestDomain = domainStats.slice().sort((a, b) => b.completed - a.completed || b.touched - a.touched)[0];
   const learningMomentum = domainStats.reduce((sum, item) => sum + item.touched, 0);
@@ -41,7 +43,7 @@ export function PersonalKnowledgeMapView({ progressMap, onOpenDomain, onOpenLess
         <article className="rounded-2xl border border-slate-200 bg-white p-5"><BookOpen className="h-5 w-5 text-teal-700" /><div className="mt-3 text-2xl font-bold">{Object.keys(progressMap).length}</div><p className="mt-1 text-xs text-slate-500">Chủ đề đã có tiến độ</p></article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5"><Brain className="h-5 w-5 text-teal-700" /><div className="mt-3 text-2xl font-bold">{domainStats.filter((item) => item.touched > 0).length}/10</div><p className="mt-1 text-xs text-slate-500">Lĩnh vực đã bắt đầu</p></article>
         <article className="rounded-2xl border border-slate-200 bg-white p-5"><Sparkles className="h-5 w-5 text-teal-700" /><div className="mt-3 text-2xl font-bold">{domainStats.reduce((sum, item) => sum + item.completed, 0)}</div><p className="mt-1 text-xs text-slate-500">Chủ đề có thể giải thích hoặc áp dụng</p></article>
-        <article className="rounded-2xl border border-slate-200 bg-white p-5"><CircleAlert className="h-5 w-5 text-amber-600" /><div className="mt-3 text-2xl font-bold">{reviewTopics.length}</div><p className="mt-1 text-xs text-slate-500">Chủ đề đang cần chú ý</p></article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-5"><CircleAlert className="h-5 w-5 text-amber-600" /><div className="mt-3 text-2xl font-bold">{reviewTopicCount}</div><p className="mt-1 text-xs text-slate-500">Chủ đề đang cần chú ý</p></article>
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">

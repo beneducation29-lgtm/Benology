@@ -39,6 +39,7 @@ import { ThinkingLabModuleView } from './components/ThinkingLabModuleView';
 import { ReflectionJournalView } from './components/ReflectionJournalView';
 import { PersonalProgressView } from './components/PersonalProgressView';
 import { KnowledgeConnectionsView } from './components/KnowledgeConnectionsView';
+import { PersonalKnowledgeMapView } from './components/PersonalKnowledgeMapView';
 
 type AppModule =
   | 'dashboard'
@@ -48,7 +49,8 @@ type AppModule =
   | 'thinking-lab'
   | 'journal'
   | 'progress'
-  | 'connections';
+  | 'connections'
+  | 'knowledge-map';
 
 export default function App() {
   const [activeModule, setActiveModule] = useState<AppModule>('dashboard');
@@ -264,6 +266,7 @@ export default function App() {
     { id: 'explore', label: 'Khám phá' },
     { id: 'thinking-lab', label: 'Luyện tư duy' },
     { id: 'connections', label: 'Kết nối kiến thức' },
+    { id: 'knowledge-map', label: 'Bản đồ của bạn' },
     { id: 'journal', label: 'Nhật ký' },
     { id: 'progress', label: 'Hồ sơ' },
   ];
@@ -274,6 +277,7 @@ export default function App() {
     { id: 'mentor', label: 'AI Mentor' },
     { id: 'thinking-lab', label: 'Tư duy' },
     { id: 'connections', label: 'Kết nối' },
+    { id: 'knowledge-map', label: 'Bản đồ' },
     { id: 'journal', label: 'Nhật ký' },
     { id: 'progress', label: 'Hồ sơ' },
   ];
@@ -489,6 +493,14 @@ export default function App() {
 
         {activeModule === 'connections' && (
           <KnowledgeConnectionsView
+            progressMap={progressMap}
+            onOpenDomain={handleExploreDomain}
+            onOpenLesson={handleOpenLesson}
+          />
+        )}
+
+        {activeModule === 'knowledge-map' && (
+          <PersonalKnowledgeMapView
             progressMap={progressMap}
             onOpenDomain={handleExploreDomain}
             onOpenLesson={handleOpenLesson}
